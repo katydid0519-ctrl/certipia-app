@@ -1,0 +1,46 @@
+# ============================================================================
+#  Netlify 배포 설정
+#   - 정적 파일만 사용 (빌드 단계 없음)
+#   - HTTPS는 Netlify가 자동 처리 (모든 사이트에 무료 인증서 자동 발급)
+# ============================================================================
+
+[build]
+  publish = "."
+
+# ─────────────── 전역 보안 헤더 ───────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# ─────────────── Service Worker: 항상 최신 ───────────────
+# SW 파일은 캐시 비활성화 → 사용자가 다음 방문 시 즉시 새 SW 받음
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# manifest.json도 자주 바뀔 수 있으므로 짧은 캐시
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ─────────────── docx MIME 타입 명시 ───────────────
+# 일부 정적 호스팅에서 .docx를 잘못된 타입으로 내려보내는 문제 방지
+[[headers]]
+  for = "/*.docx"
+  [headers.values]
+    Content-Type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    Cache-Control = "public, max-age=86400"
+
+# ─────────────── 아이콘/이미지: 길게 캐시 ───────────────
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
