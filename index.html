@@ -1370,39 +1370,24 @@
     // ---- 설치 프롬프트 처리 (beforeinstallprompt) ----
     (function () {
       const btn = document.getElementById('installBtn');
+      const INSTALL_STATE_KEY = 'certipiaPwaInstalled';
+      const displayModeQuery = window.matchMedia ? window.matchMedia('(display-mode: standalone)') : null;
       let deferredPrompt = null;
-
-      // 이미 standalone(설치된 상태)으로 실행 중이면 버튼 숨김
-      const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
-      if (isStandalone) {
-        btn.style.display = 'none';
-      }
-
-      // 브라우저가 설치 가능하다고 판단하면 이 이벤트가 발생
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (!isStandalone) btn.style.display = 'block';
-      });
-
-      btn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        btn.style.display = 'none';
-        deferredPrompt.prompt();
-        try {
-          await deferredPrompt.userChoice;
-        } catch (_) {}
-        deferredPrompt = null;
-      });
-
-      // 설치 완료 후
-      window.addEventListener('appinstalled', () => {
-        btn.style.display = 'none';
-        deferredPrompt = null;
-        console.log('[PWA] 앱 설치 완료');
-      });
+      function getInstallState(){try{return localStorage.getItem(INSTALL_STATE_KEY)==='true'}catch(_){return false}}
+      function setInstallState(value){try{if(value)localStorage.setItem(INSTALL_STATE_KEY,'true');else localStorage.removeItem(INSTALL_STATE_KEY)}catch(_){}}
+      function isRunningInstalled(){return (displayModeQuery && displayModeQuery.matches) || window.navigator.standalone === true}
+      function isPwaInstalled(){return getInstallState() || isRunningInstalled()}
+      function setButtonBase(label,disabled,visible){if(!btn)return;btn.style.display=visible?'block':'none';btn.disabled=!!disabled;btn.textContent=label;btn.setAttribute('aria-label',label)}
+      function setInstallReady(){if(isPwaInstalled())return setInstallInstalled();setButtonBase('앱 설치',false,true);btn.style.color='#fff';btn.style.background='#2c3e50'}
+      function setInstallWaiting(){if(isPwaInstalled())return setInstallInstalled();setButtonBase('앱 설치',false,false)}
+      function setInstallInstalling(){setButtonBase('설치 중',true,true)}
+      function setInstallInstalled(){setInstallState(true);setButtonBase('설치됨',true,true);btn.style.color='#0f5132';btn.style.background='#d1e7dd'}
+      if(isPwaInstalled())setInstallInstalled();else setInstallWaiting();
+      window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();if(isRunningInstalled()){setInstallInstalled();return}setInstallState(false);deferredPrompt=e;setInstallReady()});
+      btn.addEventListener('click',async()=>{if(isPwaInstalled())return setInstallInstalled();if(!deferredPrompt)return;try{deferredPrompt.prompt();const choice=await deferredPrompt.userChoice;if(choice&&choice.outcome==='accepted')setInstallInstalling()}catch(_){}deferredPrompt=null});
+      window.addEventListener('appinstalled',()=>{deferredPrompt=null;setInstallInstalled();console.log('[PWA] 앱 설치 완료')});
+      const syncInstalledState=()=>{if(isPwaInstalled())setInstallInstalled()};
+      if(displayModeQuery&&typeof displayModeQuery.addEventListener==='function')displayModeQuery.addEventListener('change',syncInstalledState);else if(displayModeQuery&&typeof displayModeQuery.addListener==='function')displayModeQuery.addListener(syncInstalledState);
     })();
 
     // ---- Service Worker 등록 ----
