@@ -7,8 +7,11 @@
 
   <!-- ===== PWA 등록 메타 ===== -->
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#2c3e50" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <meta name="theme-color" content="#f7b500" />
+  <link rel="icon" href="./favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="수료증" />
@@ -1384,10 +1387,11 @@
       function setInstallInstalled(){setInstallState(true);setButtonBase('설치됨',true,true);btn.style.color='#0f5132';btn.style.background='#d1e7dd'}
       if(isPwaInstalled())setInstallInstalled();else setInstallWaiting();
       window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();if(isRunningInstalled()){setInstallInstalled();return}setInstallState(false);deferredPrompt=e;setInstallReady()});
-      btn.addEventListener('click',async()=>{if(isPwaInstalled())return setInstallInstalled();if(!deferredPrompt)return;try{deferredPrompt.prompt();const choice=await deferredPrompt.userChoice;if(choice&&choice.outcome==='accepted')setInstallInstalling()}catch(_){}deferredPrompt=null});
+      btn.addEventListener('click',async()=>{if(isPwaInstalled())return setInstallInstalled();if(!deferredPrompt)return;try{deferredPrompt.prompt();const choice=await deferredPrompt.userChoice;if(choice&&choice.outcome==='accepted')setInstallInstalled()}catch(_){}deferredPrompt=null});
       window.addEventListener('appinstalled',()=>{deferredPrompt=null;setInstallInstalled();console.log('[PWA] 앱 설치 완료')});
       const syncInstalledState=()=>{if(isPwaInstalled())setInstallInstalled()};
       if(displayModeQuery&&typeof displayModeQuery.addEventListener==='function')displayModeQuery.addEventListener('change',syncInstalledState);else if(displayModeQuery&&typeof displayModeQuery.addListener==='function')displayModeQuery.addListener(syncInstalledState);
+      window.addEventListener('storage',(event)=>{if(event.key===INSTALL_STATE_KEY&&event.newValue==='true')setInstallInstalled()});
     })();
 
     // ---- Service Worker 등록 ----

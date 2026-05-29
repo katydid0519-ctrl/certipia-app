@@ -5,7 +5,7 @@
  * =======================================================================*/
 
 // ▼ 새 버전 배포 시 이 값만 +1 하면 됨 (예: 'v1' → 'v2' → 'v3' ...)
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `cert-app-${CACHE_VERSION}`;
 
 // 설치 시점에 미리 받아둘 파일 목록 — 오프라인 동작을 위한 기본 셋
@@ -14,8 +14,15 @@ const PRECACHE_URLS = [
   './index.html',
   './template.docx',
   './manifest.json',
+  './favicon.ico',
+  './icons/favicon-16x16.png',
+  './icons/favicon-32x32.png',
+  './icons/favicon-48x48.png',
+  './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/maskable-192.png',
+  './icons/maskable-512.png',
   // 외부 CDN 라이브러리 (한 번 받아두면 오프라인에서도 docx 생성 가능)
   'https://unpkg.com/pizzip/dist/pizzip.js',
   'https://unpkg.com/pizzip/dist/pizzip-utils.js',
